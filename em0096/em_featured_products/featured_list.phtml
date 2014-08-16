@@ -1,0 +1,139 @@
+<?php 
+	$_products = $this->getProductCollection(); 
+	
+	$_helper = $this->helper('catalog/output');
+	if(Mage::registry('current_category')){
+		  $_products->addUrlRewrite(Mage::registry('current_category')->getId());
+	}
+		  
+	$limitproduct = $this->getLimitCount();	   
+	$size = $_products->getSize();
+	
+	if($limitproduct == "" || $limitproduct > $size){
+		$limitproduct = $size;
+	}
+	
+	$title = $this->getFrontendTitle();
+	$desc  = $this->getFrontendDescription();
+	$wrapclass = $this->getCustomClass();
+	$w = $this->getThumbnailWidth();
+	$h = $this->getThumbnailHeight();	 
+	$_columnCount = $this->getColumnCount(); 
+	$alt_img = $this->getAltImg();
+	
+	$marginLeft = $this->ShowThumb() != 'true' ? 0 :
+		$this->getItemWidth() ? $this->getItemWidth() + 10 : 
+		$w ? $w + 10 : null;
+		
+?>
+
+<div <?php if($wrapclass): ?>class="<?php echo $wrapclass;?>"<?php endif; ?>>
+	<?php if($title): ?>	  
+		<div class="widget-title">
+			<h2><span><?php echo $title; ?></span></h2>
+		</div>
+	<?php endif; ?>
+	
+	<?php if($desc):?>
+		<p><?php echo $desc; ?></p>
+	<?php endif ?>
+		
+	<?php if ($limitproduct): ?>
+		<div class="widget em-widget-featured-products-list"> 
+			<div class="widget-products">
+				<?php $i=0; foreach ($_products->getItems() as $_product): ?>
+					<?php if ($_columnCount > 0 && $i%$_columnCount==0 || $_columnCount <= 0 && $i == 0): ?>
+					<ul class="products-list">
+					<?php endif ?>
+						<li class="<?php if($itemClass = $this->getData('item_class')) echo $itemClass.' '; ?>item<?php echo $_columnCount > 0 && $i%$_columnCount==0 || $_columnCount <= 0 && $i == 0 ?' first':''; ?><?php echo $_columnCount > 0 && ($i+1)%$_columnCount==0 || $i+1 == $limitproduct ?' last':''; ?>"
+							style="<?php echo $this->getItemWidth() ? 'width:'.$this->getItemWidth().'px;' : '' ?> <?php echo $this->getItemHeight() ? 'height:'.$this->getItemHeight().'px;' : '' ?> <?php echo $this->getItemSpacing() ? 'margin-right:'.$this->getItemSpacing().'px;margin-bottom:'.$this->getItemSpacing().'px;' : '' ?>">
+						
+							<?php if ($this->ShowThumb()=='true'): ?>
+								<a href="<?php echo $_product->getProductUrl() ?>" title="<?php echo $this->stripTags($_product->getName(), null, true) ?>" class="product-image">
+									
+									<?php if ($alt_img): ?>
+										<img class="bottom" src="<?php echo $this->helper('catalog/image')->init($_product, $alt_img)->resize($w,$h) ?>" width="<?php echo $w; ?>" height="<?php echo $h ;?>" alt="<?php echo $this->stripTags($_product->getName(), null, true) ?>" />
+									<?php endif ?>
+										<img <?php if ($alt_img): ?>class="top"<?php endif ?> src="<?php echo $this->helper('catalog/image')->init($_product, 'small_image')->resize($w,$h) ?>" width="<?php echo $w; ?>" height="<?php echo $h ;?>" alt="<?php echo $this->stripTags($_product->getName(), null, true) ?>" />
+									<?php if ($this->ShowLabel()=='true'):?>
+										<!--show label product - label extension is required-->
+										<?php Mage::helper('productlabels')->display($_product);?>
+									<?php endif;?>
+								</a>
+							<?php else: ?>
+								<?php if ($this->ShowLabel()=='true'):?>
+									<!--show label product - label extension is required-->
+									<?php Mage::helper('productlabels')->display($_product);?>
+								<?php endif;?>
+							<?php endif; ?>
+						
+							<div class="product-shop">
+								<div class="f-fix">
+									<!--product name-->
+									<?php if ($this->ShowProductName()=='true'):?>
+										<h3 class="product-name"><a href="<?php echo $_product->getProductUrl() ?>" title="<?php echo $this->stripTags($_product->getName(), null, true) ?>"><?php echo $this->helper('catalog/output')->productAttribute($_product, $_product->getName() , 'name') ?></a></h3>
+									<?php endif;?>
+								
+									<!--product description-->
+									<?php if ($this->ShowDesc()=='true'):?>
+										<div class="desc">
+											<?php echo $_helper->productAttribute($_product, $_product->getShortDescription(), 'short_description') ?>
+										</div>
+									<?php endif ;?>
+								
+									<!--product reviews-->
+									<?php if ($this->ShowReview()=='true'):?>
+										<?php echo $this->getReviewsSummaryHtml($_product, 'short') ?>
+									<?php endif ; ?>
+								
+									<!--product price-->
+									<?php if ($this->ShowPrice()=='true'):?>
+									<?php 
+									    /* echo $this->getPriceHtml($_product, true) */
+									    /* Sashas_Callfor_Price */
+									          echo $this->getLayout()->createBlock('callforprice/listprice')->setProduct($_product)->setPrefix('')->toHtml();
+									    /* Sashas_Callfor_Price */
+									?>
+									<?php endif;?>
+								
+									<!--product add to cart-->
+									<?php if ($this->ShowAddtoCart()=='true'):?>
+										<?php if ($_product->isSaleable()): ?>
+									<?php 
+									    /* Sashas_Callfor_Price */
+									        echo $this->getLayout()->createBlock('callforprice/listcart')->setProduct($_product)->setAddUrl($this->getAddToCartUrl($_product))->toHtml();
+									    /* Sashas_Callfor_Price */
+									?>                       
+				                       <!--  <button type="button" title="<?php echo $this->__('Add to Cart') ?>" class="button btn-cart" onclick="setLocation('<?php echo $this->getAddToCartUrl($_product) ?>')"><span><span><?php echo $this->__('Add to Cart') ?></span></span></button> -->
+				                    <?php else: ?>
+											<p class="availability out-of-stock"><span><?php echo $this->__('Out of stock') ?></span></p>
+										<?php endif; ?>
+									<?php endif; ?>
+								
+									<!--product add to compare-wishlist-->
+									<?php if($this->ShowAddto()=='true'):?>
+										<ul class="add-to-links">
+											<?php if ($this->helper('wishlist')->isAllow()) : ?>
+												<li><a href="<?php echo $this->getAddToWishlistUrl($_product) ?>" class="link-wishlist" title="<?php echo $this->__('Add to Wishlist') ?>"><?php echo $this->__('Add to Wishlist') ?></a></li>
+											<?php endif; ?>
+											<?php if($_compareUrl=$this->getAddToCompareUrl($_product)): ?>
+												<li><span class="separator">|</span> <a href="<?php echo $_compareUrl ?>" class="link-compare" title="<?php echo $this->__('Add to Compare') ?>"><?php echo $this->__('Add to Compare') ?></a></li>
+											<?php endif; ?>
+										</ul>
+									<?php endif; ?>
+								
+								</div>
+							</div>
+						</li>
+					<?php if ( $_columnCount > 0 && ($i+1)%$_columnCount==0 || $i+1==$limitproduct ): ?>
+					</ul>
+					<?php endif; ?>
+					<?php $i++;?>
+					<?php if($i >= $limitproduct) break;?>
+				<?php endforeach; ?>
+			</div>
+		</div>
+	<?php else:?>
+		<p class="note-msg"><?php echo $this->__('There are no products matching the selection.') ?></p>
+	<?php endif; ?>
+</div>

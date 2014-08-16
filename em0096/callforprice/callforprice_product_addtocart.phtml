@@ -1,0 +1,38 @@
+<?php 
+/**
+ * @author		Sashas
+ * @category    Sashas
+ * @package     Sashas_Callforprice
+ * @copyright   Copyright (c) 2013 Sashas IT Support Inc. (http://www.sashas.org)
+ * @license     http://opensource.org/licenses/GPL-3.0  GNU General Public License, version 3 (GPL-3.0)
+
+ */
+
+$_product=$this->getProduct();
+if (empty($_product))
+ 	$_product= Mage::registry('current_product');
+
+$customer_group=$this->GetGroupId();
+$show_cart=0;
+$model=Mage::getModel('callforprice/callforprice')->loadByProductId($_product->getId());
+ 
+if ($model->getId() && $model->getAddtocartEnabled()==1) {
+	$show_cart=1;	
+}
+if (!$model->getId() || !$model->getStatus()) {
+	$show_cart=1;
+}
+if (in_array($customer_group, explode(',',$model->getCustomerGroups()))) {
+	$show_cart=1;
+}
+if ($show_cart){	 
+  $buttonTitle = $this->__('Add to Cart');  
+	  if($_product->isSaleable()): ?>
+    <div class="add-to-cart">     	 <?php if(!$_product->isGrouped()): ?>        <label for="qty"><?php echo $this->__('Quantity: ') ?></label>        <input type="text" name="qty" id="qty" maxlength="12" value="<?php echo $this->getProductDefaultQty() * 1 ?>" title="<?php echo $this->__('Qty') ?>" class="input-text qty" />                <div class="qty-ctl">            <button title="increase" onclick="changeQty(1); return false;" class="increase">increase</button>            <button title="decrease" onclick="changeQty(0); return false;" class="decrease">decrease</button>        </div>        <?php endif; ?>         <?php if ($_product->getTypeId() != Mage_Catalog_Model_Product_Type::TYPE_BUNDLE): ?>                   <?php /* echo $this->getPriceHtml($_product) */ ?>			<?php 			    /* Sashas_Callfor_Price */			        echo $this->getLayout()->createBlock('callforprice/callforprice')->setWithoutStock(1)->toHtml();  			    /* Sashas_Callfor_Price */			?>                                    <?php echo $this->getTierPriceHtml() ?>        <?php endif; ?>         <button type="button" title="<?php echo $buttonTitle ?>" class="button btn-cart" onclick="productAddToCartForm.submit(this)"><span><span><?php echo $buttonTitle ?></span></span></button>        <?php echo $this->getChildHtml('', true, true) ?>        <script type="text/javascript">        function changeQty(increase) {            var qty = parseInt($('qty').value);            if ( !isNaN(qty) ) {                qty = increase ? qty+1 : (qty>1 ? qty-1 : 1);                $('qty').value = qty;            }        }        </script>    </div>
+	 <?php endif;  
+	   
+} else {	/* Sashas_Callfor_Price */
+	echo $this->getLayout()->createBlock('callforprice/callforprice')->setWithoutStock(1)->toHtml();
+	/* Sashas_Callfor_Price */	}
+
+ 
