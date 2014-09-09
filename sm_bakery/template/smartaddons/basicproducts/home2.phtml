@@ -1,0 +1,161 @@
+<?php
+    $_productCollection = $this->getLoadedProductCollection();
+    $_helper = $this->helper('catalog/output');
+    $imgWidth = $this->product_image_width;
+    $imgHeight = $this->product_image_height;
+    if ($imgWidth <= 0 || $imgHeight <= 0){
+    	$this->product_image_disp = false;
+    }
+	$descLength = $this->product_description_max_length;
+	// echo $descLength;die;
+?>
+
+<div class="category-products">
+	<?php if ($this->title){ ?>
+	<?php 
+		//$arr_word =  $this->title ? explode(' ',$this->title) : "";
+		//$join_word = array_shift($arr_word).' <span>'.implode(' ',$arr_word).'</span>';
+	 ?>	
+	<div class="block-title"><strong><?php //echo $join_word; ?><?php echo $this->title ?></strong></div>
+	<?php } ?>
+    <div class="yt-products-container">
+    <?php 
+	if(!$_productCollection->count()){ ?>
+        <p class="note-msg"><?php echo $this->__('There are no products matching the selection.') ?></p>
+     <?php 
+	}else{
+		$row = 0;
+        $col= 0;
+        $count = 1;
+		$i=0; 
+		$_collectionSize = $_productCollection->count();
+		foreach($_productCollection as $_product){
+			$now = date("Y-m-d");
+			$newsFrom= substr($_product->getData('news_from_date'),0,10);
+			$newsTo=  substr($_product->getData('news_to_date'),0,10);
+			$specialprice = Mage::getModel('catalog/product')->load($_product->getId())->getSpecialPrice(); 
+			$isBestProduct =($_product->getResource()->getAttribute('best')->getFrontend()->getValue($_product)=="Yes")?$_product->getResource()->getAttribute('best')->getFrontend()->getValue($_product):'';                				
+            ?>
+			<?php if ($i++==0){ ?>
+				<div class="products-grid">
+					<div class="row">
+					<?php } ?>
+						<div class="span2d4<?php /* if(($i-1)%$_columnCount==0): ?> first<?php elseif($i%$_columnCount==0): ?> last<?php endif; */?>" data-normal="span3" data-tablet="span4" data-stablet="span6">
+							<div class="item bgcolor2">
+								<div class="item-inner <?php /*bgcolor2-hover */ ?>">
+					
+									<div class="item-box">
+	
+										<div class="product-image">
+											<?php
+											if ($now>=$newsFrom && $now<=$newsTo){
+												echo "<span class='newproduct-grid'>new</span>";
+												//echo $now.' -- '.$newsFrom.' -- '.$newsTo;
+											}
+											if ($specialprice){
+												echo "<span class='saleoff-grid'>sale off</span>";
+											}
+											if ($isBestProduct){
+												echo "<span class='bestproduct-grid'>best</span>";
+											}											
+											?>										
+											<a class="product-image-inner" href="<?php echo $_product->getProductUrl() ?>" title="<?php echo $this->stripTags($this->getImageLabel($_product, 'small_image'), null, true) ?>" ><img src="<?php echo $this->helper('catalog/image')->init($_product, 'small_image')->resize($imgWidth,$imgHeight); ?>"  alt="<?php echo $this->stripTags($this->getImageLabel($_product, 'small_image'), null, true) ?>" /></a>
+											<div class="item-box-hover ">
+												<?php /*	
+												<?php if($_product->isSaleable()): ?>
+													<a title="<?php echo $this->__('Add to Cart') ?>" href="<?php echo $this->getAddToCartUrl($_product) ?>" class="btn-cart fontcolor" onclick="setLocation('<?php echo $this->getAddToCartUrl($_product) ?>')"><span><span><?php echo $this->__('Add to Cart') ?></span></span></a>
+												<?php else: ?>
+													<span class="availability out-of-stock"><span><?php echo $this->__('Out of stock') ?></span></span>
+												<?php endif; ?>	 */ ?>
+												<?php /* <a class="readmore fontcolor" href="<?php echo $_product->getProductUrl() ?>" title="<?php echo $this->stripTags($this->getImageLabel($_product, 'small_image'), null, true) ?>"><?php echo $this->__('More Detail')  ?></a> */ ?>
+												<div class="actions">
+													<ul class="add-to-links">
+														<?php if ($this->helper('wishlist')->isAllow()) : ?>
+															<li><a href="<?php echo $this->helper('wishlist')->getAddUrl($_product) ?>" class="link-wishlist"><?php echo $this->__('Wishlist') ?></a></li>
+														<?php endif; ?>
+														<?php if($_compareUrl=$this->getAddToCompareUrl($_product)): ?>
+															<li><a href="<?php echo $_compareUrl ?>" class="link-compare"><?php echo $this->__('Compare') ?></a></li>
+														<?php endif; ?>
+													</ul>
+												</div>																				
+												<a class="readmore fontcolor" href="<?php echo $_product->getProductUrl() ?>" title="<?php echo $this->stripTags($this->getImageLabel($_product, 'small_image'), null, true) ?>"><?php /* <i class="icon-plus-circle"></i> */ ?><span class="bgmask"></span></a>
+												<?php //if($_product->getRatingSummary()): ?>            
+													<?php //echo $this->getReviewsSummaryHtml($_product, 'short', true) ?>
+												<?php //endif; ?>	
+											</div>
+											
+										</div>
+										<?php //echo $this->getPriceHtml($_product, true) ?>
+									</div>
+									<div class="item-box-footer">
+										<h2 class="product-name">
+											<a class="fontcolor" href="<?php echo $_product->getProductUrl() ?>" title="<?php echo $this->stripTags($_product->getName(), null, true) ?>">
+											<?php 
+											if(strlen($_helper->productAttribute($_product, $_product->getName(), 'name')) > 100){
+												echo substr($_helper->productAttribute($_product, $_product->getName(), 'name'), 0, 100) .' ...';
+											}else{
+												echo $_helper->productAttribute($_product, $_product->getName(), 'name');
+											}
+											?>
+											</a>
+										</h2>	
+										<div class="desc std">
+											<?php //echo $_helper->productAttribute($_product, $_product->getShortDescription(), 'short_description') ?>
+											<?php 
+												if(strlen($_helper->productAttribute($_product, $_product->getShortDescription(), 'short_description')) >40){
+													echo substr( $_helper->productAttribute($_product, $_product->getShortDescription(), 'short_description'), 0, 40) .' ...';
+												}else{
+													echo  $_helper->productAttribute($_product, $_product->getShortDescription(), 'short_description');
+												}
+											?>						
+										</div>									
+										<div class="price-wrapper">	
+											<span class="price-title"><?php echo $this->__("price:"); ?></span>
+												<?php 
+												    /* echo $this->getPriceHtml($_product, true) */
+												    /* Sashas_Callfor_Price */
+												          echo $this->getLayout()->createBlock('callforprice/listprice')->setProduct($_product)->setPrefix('')->toHtml();
+												    /* Sashas_Callfor_Price */
+												?>
+										</div>	
+										<?php if($_product->isSaleable()): ?>
+										<?php 
+										    /* Sashas_Callfor_Price */
+										        echo $this->getLayout()->createBlock('callforprice/listcart')->setProduct($_product)->setAddUrl($this->getAddToCartUrl($_product))->setCustomAjax(1)->toHtml();
+										    /* Sashas_Callfor_Price */
+										?>                       
+					                       <!--  <button type="button" title="<?php echo $this->__('Add to Cart') ?>" class="button btn-cart" onclick="setLocation('<?php echo $this->getAddToCartUrl($_product) ?>')"><span><span><?php echo $this->__('Add to Cart') ?></span></span></button> -->
+					                    										
+											<!-- <a title="<?php echo $this->__('Add to Cart') ?>" href="javascript:void(0);<?php //echo $this->getAddToCartUrl($_product) //allow add product to cart and then redirect to cart page ?>" class="btn-cart bgcolor fontcolor" onclick="setLocation('<?php echo $this->getAddToCartUrl($_product) ?>')"><span><span <?php /* class="icon-plus" */ ?>><?php echo $this->__('Add to Cart') ?></span></span></a> -->
+										<?php else: ?>
+											<span class="availability out-of-stock"><span><?php echo $this->__('Out of stock') ?></span></span>
+										<?php endif; ?>	
+										<?php /* 
+										<div class="actions">
+											<ul class="add-to-links">
+												<?php if ($this->helper('wishlist')->isAllow()) : ?>
+													<li><a href="<?php echo $this->helper('wishlist')->getAddUrl($_product) ?>" class="link-wishlist"><?php echo $this->__('Add to Wishlist') ?></a></li>
+												<?php endif; ?>
+												<?php if($_compareUrl=$this->getAddToCompareUrl($_product)): ?>
+													<li><a href="<?php echo $_compareUrl ?>" class="link-compare"><?php echo $this->__('Add to Compare') ?></a></li>
+												<?php endif; ?>
+											</ul>
+										</div>	 */ ?>															
+									</div>
+
+									<?php /* <span class="inner-border bgcolor"></span> */ ?>
+								</div>
+							</div>
+						</div>
+					<?php // if ($i%$_columnCount==0 || $i==$_collectionSize): ?>
+					<?php if ($i==$_collectionSize){ ?>
+					</div>
+				</div>
+<?php
+ 			} 	?>
+<?php
+		}	?>
+<?php 	
+	} 	?>
+	</div>
+</div>

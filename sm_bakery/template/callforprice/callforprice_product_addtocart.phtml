@@ -1,0 +1,53 @@
+<?php 
+/**
+ * @author		Sashas
+ * @category    Sashas
+ * @package     Sashas_Callforprice
+ * @copyright   Copyright (c) 2013 Sashas IT Support Inc. (http://www.sashas.org)
+ * @license     http://opensource.org/licenses/GPL-3.0  GNU General Public License, version 3 (GPL-3.0)
+
+ */
+
+$_product=$this->getProduct();
+if (empty($_product))
+ 	$_product= Mage::registry('current_product');
+
+$customer_group=$this->GetGroupId();
+$show_cart=0;
+$model=Mage::getModel('callforprice/callforprice')->loadByProductId($_product->getId());
+ 
+if ($model->getId() && $model->getAddtocartEnabled()==1) {
+	$show_cart=1;	
+}
+if (!$model->getId() || !$model->getStatus()) {
+	$show_cart=1;
+}
+if (in_array($customer_group, explode(',',$model->getCustomerGroups()))) {
+	$show_cart=1;
+}
+if ($show_cart){	 
+  $buttonTitle = $this->__('Add to Cart');  
+	  if($_product->isSaleable()): ?>
+	     <div class="add-to-cart">
+	         <?php if(!$_product->isGrouped()): ?>
+					<div class="wrap-qty">
+						<div class="qty-title"><span><?php echo $this->__('Qty') ?>:</span></div>
+						<div class="qty-set">
+							<span class="quantity-box">
+								<input type="text" class="quantity-input qty" id="qty<?php echo $count_input_qty ?>" name="qty" maxlength="12" value="<?php echo $this->getProductDefaultQty() * 1 ?>" title="<?php echo $this->__('Qty') ?>"/>
+							</span>
+							<span class="quantity-controls ">
+								<input type="button" class="quantity-controls quantity-plus" onclick="$('qty').value=Number($('qty').value)+1" value="+">
+								<input type="button" class="quantity-controls quantity-minus" onclick="if(Number($('qty').value)>1){$('qty').value=Number($('qty').value)-1;}" value="-">
+							</span>	
+						</div>
+					</div>	
+	         <?php endif; ?>
+	         <button type="button" title="<?php echo $buttonTitle ?>" class="button btn-cart" onclick="productAddToCartForm.submit(this)"><span><span><?php echo $buttonTitle ?></span></span></button>
+	         <?php echo $this->getChildHtml('', true, true) ?>
+	     </div>
+	 <?php endif;  
+	   
+}
+
+ 

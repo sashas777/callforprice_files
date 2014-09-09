@@ -1,0 +1,381 @@
+<?php
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE_AFL.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade Magento to newer
+ * versions in the future. If you wish to customize Magento for your
+ * needs please refer to http://www.magentocommerce.com for more information.
+ *
+ * @category   design_default
+ * @package    Mage
+ * @copyright  Copyright (c) 2008 Irubin Consulting Inc. DBA Varien (http://www.varien.com)
+ * @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */
+
+/**
+ * Product view template
+ *
+ * @see Mage_Catalog_Block_Product_View
+ * @see Mage_Review_Block_Product_View
+ */
+?>
+<div class="yt-product-detail">
+<?php
+    $_helper = $this->helper('catalog/output');
+    $_product = $this->getProduct()
+?>
+<script type="text/javascript">
+    var optionsPrice = new Product.OptionsPrice(<?php echo $this->getJsonConfig() ?>);
+	$jsmart("#yt_tab_products").ready( function($) {
+		$jsmart("#yt_tab_products").ytContentTabs();
+	} ); 
+</script>
+    <div id="messages_product_view"><?php echo $this->getMessagesBlock()->getGroupedHtml() ?></div>
+
+    <div class="yt-product-box">
+        <div class="product-info-box">
+            <div class="product-essential">
+            <form action="<?php echo $this->getSubmitUrl($_product) ?>" method="post" id="product_addtocart_form"<?php if($_product->getOptions()): ?> enctype="multipart/form-data"<?php endif; ?>>
+        
+                <div class="product-img-box">
+                    <?php echo $this->getChildHtml('media') ?>
+                </div>
+        
+                <?php /*
+				<div class="product-shop">
+				*/ ?>
+					<h1 class="product-name">
+						<?php echo $_helper->productAttribute($_product, $this->htmlEscape($_product->getName()), 'name') ?>
+					</h1>	
+					<div class="box-price-review">
+						<?php echo $this->getReviewsSummaryHtml($_product, false, true)?>					
+						<div class="price-wrapper">	
+							<span class="price-title"><?php echo $this->__("price:"); ?></span>
+							<?php /*echo $this->getPriceHtml($_product, true)*/ ?>
+							<?php 
+							    /* Sashas_Callfor_Price */
+							        echo $this->getLayout()->createBlock('callforprice/callforprice')->setWithoutStock(1)->toHtml();  
+							    /* Sashas_Callfor_Price */
+							?> 							
+						</div>	     
+						
+					</div>	
+ 
+					<?php $_product = $this->getProduct() ?>
+
+					<?php echo $this->getChildHtml('product_type_data_extra') ?>
+
+					
+                    <?php echo $this->getChildHtml('alert_urls') ?>	
+					<?php /*
+					<div style="clear:both"></div>	
+					*/ ?>					
+					<div class="box-sub">
+						<?php if ($_product->isAvailable()): ?>
+							<?php echo $this->__('Availability:') ?><p class="availability in-stock"><?php /* <i class="i-ok-circle fontcolor"></i> */ ?> <span><?php echo $this->__('In stock') ?></span></p>
+						<?php else: ?>
+							<?php echo $this->__('Availability:') ?><p class="availability out-of-stock"><?php /* <i class="i-cancel-circle fontcolor"></i> */ ?> <span><?php echo $this->__('Out of stock') ?></span></p>
+						<?php endif; ?>
+						<?php if ($this->canEmailToFriend()): ?>
+							<a class="link-mail" href="<?php echo $this->helper('catalog/product')->getEmailToFriendUrl($_product) ?>"><i class="i-mail fontcolor"></i><?php echo $this->__('Email to a Friend') ?></a>
+						<?php endif; ?>
+						<?php echo $this->getReviewsSummaryHtml($_product, false, true)?>
+					</div>
+                    <fieldset class="no-display">
+                      <input type="hidden" name="product" value="<?php echo $_product->getId() ?>" />
+                      <input type="hidden" name="related_product" id="related-products-field" value="" />
+                    </fieldset>
+					<?php echo $this->getTierPriceHtml() ?>
+					<?php /*
+					<div style="clear:both"></div>	
+					*/ ?>		
+					<div class="actions-addto">
+						<?php echo $this->getChildHtml('addto') ?>					
+					</div>
+					<div class="box-main">
+						<?php if (!$this->hasOptions()):?>
+							<div class="add-to-holder">
+								<?php if($_product->isSaleable()): ?>
+		                        <?php /*echo $this->getChildHtml('addtocart')*/ ?>
+								<?php 
+								    /* Sashas_Callfor_Price */
+								        echo $this->getLayout()->createBlock('callforprice/productaddto')->toHtml();   
+								    /* Sashas_Callfor_Price */
+								?>   
+									<?php if( $this->helper('wishlist')->isAllow() || $_compareUrl=$this->helper('catalog/product_compare')->getAddUrl($_product)): ?>
+										<?php  /*<span class="add-or"><?php echo $this->__('or') ?></span>*/ ?>
+									<?php endif; ?>
+								<?php endif; ?>
+							</div>
+							<?php echo $this->getChildHtml('extra_buttons') ?>
+						<?php endif; ?>
+					
+						<div class="stock-status">
+						<?php if ($_product->isAvailable()): ?>
+							<?php echo $this->__('Availability:') ?><p class="availability in-stock"><?php /* <i class="i-ok-square"></i> */ ?><span><?php echo $this->__('In stock') ?></span></p>
+						<?php else: ?>
+							<?php echo $this->__('Availability:') ?><p class="availability out-of-stock"><?php /* <i class="i-cancel-circle"></i> */ ?><span><?php echo $this->__('Out of stock') ?></span></p>
+						<?php endif; ?>		
+						</div>			
+						
+						<div class="divider"></div>
+					</div>
+
+					
+					<?php /*            
+					<?php if ($_product->getShortDescription()):?>
+                        <h4><?php echo $this->__('Quick Overview') ?></h4>
+                        <div class="short-description"><?php echo $_helper->productAttribute($_product, nl2br($_product->getShortDescription()), 'short_description') ?></div>
+                    <?php endif;?> */ ?>
+					
+                    <?php echo $this->getChildHtml('other');?>
+        
+                    <?php if ($_product->isSaleable() && $this->hasOptions()):?>
+                        <?php echo $this->getChildChildHtml('container1', '', true, true) ?>
+                    <?php endif;?>
+                <?php /*
+				</div>
+				*/ ?>        
+                
+                <div class="clear"></div>
+                <?php if ($_product->isSaleable() && $this->hasOptions()):?>
+                    <?php echo $this->getChildChildHtml('container2', '', true, true) ?>
+                <?php endif;?>
+            </form>
+            <script type="text/javascript">
+            //<![CDATA[
+				var isError;
+                var productAddToCartForm = new VarienForm('product_addtocart_form');
+                productAddToCartForm.submit = function(button, url) {
+                    if (this.validator.validate()) {
+                        var form = this.form;
+                        var oldUrl = form.action;
+        
+                        if (url) {
+                           form.action = url;
+                        }
+                        var e = null;
+                        try {
+                            this.form.submit();
+                        } catch (e) {
+                        }
+                        this.form.action = oldUrl;
+                        if (e) {
+                            throw e;
+                        }
+        
+                        if (button && button != 'undefined') {
+                            button.disabled = true;
+                        }
+                    }
+                }.bind(productAddToCartForm);
+        
+                productAddToCartForm.submitLight = function(button, url){
+                    if(this.validator) {
+                        var nv = Validation.methods;
+                        delete Validation.methods['required-entry'];
+                        delete Validation.methods['validate-one-required'];
+                        delete Validation.methods['validate-one-required-by-name'];
+                        if (this.validator.validate()) {
+                            if (url) {
+                                this.form.action = url;
+                            }
+                            this.form.submit();
+                        }
+                        Object.extend(Validation.methods, nv);
+                    }
+                }.bind(productAddToCartForm);
+            //]]>
+            </script>
+            </div>
+        </div>
+		
+		<?php /* 
+        <div id="yt_tab_products" class="product-collateral accordion">
+			<?php if ($_description = $this->getChildHtml('description')):?>
+			<div class="accordion-group">
+				<div class="accordion-heading">
+					<a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#yt_tab_products" href="#yt_tab_decription">
+					<?php echo $this->__('Product Description') ?>
+					</a>
+				</div>
+				<div id="yt_tab_decription" class="accordion-body collapse in">
+					<div class="accordion-inner">
+						<?php echo $_description ?>
+					</div>
+					<span class="inner-border bgcolor"></span>
+				</div>
+			</div>
+			<?php endif; ?>
+			<?php if ($_additional = $this->getChildHtml('additional')):?>
+			<div class="accordion-group">
+				<div class="accordion-heading">
+					<a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#yt_tab_products" href="#yt_tab_additional">
+					<?php echo $this->__('Additional Information') ?>
+					</a>
+				</div>
+				<div id="yt_tab_additional" class="accordion-body collapse">
+					<div class="accordion-inner">
+						<?php echo $_additional ?>
+					</div>
+					<span class="inner-border bgcolor"></span>
+				</div>
+			</div>
+			<?php endif; ?>
+			<?php if($upsell_products = $this->getChildHtml('upsell_products')): ?>
+			<div class="accordion-group">
+				<div class="accordion-heading">
+					<a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#yt_tab_products" href="#yt_tabitem_upsell">
+					<?php echo $this->__('Upsell Products') ?>
+					</a>
+				</div>
+				<div id="yt_tabitem_upsell" class="accordion-body collapse">
+					<div class="accordion-inner">
+						<?php echo $upsell_products; ?>
+					</div>
+					<span class="inner-border bgcolor"></span>
+				</div>
+			</div>
+			<?php endif; ?>
+			<?php if($product_additional_data = $this->getChildHtml('product_additional_data')): ?>
+			<div class="accordion-group">
+				<div class="accordion-heading">
+					<a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#yt_tab_products" href="#yt_tabitem_tags">
+					<?php echo $this->__('Product Tags') ?>
+					</a>
+				</div>
+				<div id="yt_tabitem_tags" class="accordion-body collapse">
+					<div class="accordion-inner">
+						<?php echo $product_additional_data; ?>
+					</div>
+					<span class="inner-border bgcolor"></span>
+				</div>
+			</div>
+			<?php endif; ?>
+			
+			<?php if($product_reviews = $this->getChildHtml('product_reviews')){ ?>
+				<script type="text/javascript">
+					alert("<?php echo $product_reviews ?>");
+				</script>
+			<?php } ?>
+			<?php if($product_reviews = $this->getChildHtml('product_reviews')): ?>
+			<div class="accordion-group">
+				<div class="accordion-heading">
+					<a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#yt_tab_products" href="#yt_tabitem_reviews">
+					<?php echo $this->__('Product Reviews') ?>
+					</a>
+				</div>
+				<div id="yt_tabitem_reviews" class="accordion-body collapse">
+					<div class="accordion-inner">
+						<?php echo $product_reviews; ?>
+					</div>
+					<span class="inner-border bgcolor"></span>
+				</div>
+			</div>
+			<?php endif; ?>
+			<?php if($review_form = $this->getChildHtml('review_form')): ?>
+			<div class="accordion-group">
+				<div class="accordion-heading">
+					<a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#yt_tab_products" href="#yt_tabitem_reviewform">
+					<?php echo $this->__('Write Your Own Review') ?>
+					</a>
+				</div>
+				<div id="yt_tabitem_reviewform" class="accordion-body collapse">
+					<div class="accordion-inner">
+						<?php echo $review_form; ?>
+					</div>
+					<span class="inner-border bgcolor"></span>	
+				</div>
+			</div>
+			<?php endif; ?>
+  
+		<script type="text/javascript">
+			$jsmart('#yt_tab_products').find('a.accordion-toggle').first().removeClass('collapsed');
+			// $jsmart('#yt_tab_products').on('hidden', function () {
+			// // do something�
+			// });			
+			$jsmart('a.accordion-toggle').click(function(){$jsmart('#yt_tab_products').find('a.accordion-toggle').addClass('collapsed');})
+		</script>	
+		
+		</div>	
+		*/ ?>
+		
+		<div id="yt_tab_products" class="product-collateral">
+			<ul class="yt-tab-navi clearfix">
+              <?php if ($_description = $this->getChildHtml('description')):?>
+                 <li><a href="#yt_tab_decription"><?php echo $this->__('Product Description') ?></a></li>
+              <?php endif; ?>
+              <?php if ($_additional = $this->getChildHtml('additional')):?>
+                <li><a href="#yt_tab_additional"><?php echo $this->__('Additional Information') ?></a></li>
+              <?php endif; ?>
+              <?php if($upsell_products = $this->getChildHtml('upsell_products')): ?>
+                <li><a href="#yt_tabitem_upsell"><?php echo $this->__('Upsell Products') ?></a></li>
+              <?php endif; ?>
+              <?php if($product_additional_data = $this->getChildHtml('product_additional_data')): ?>
+                <li><a href="#yt_abitem_tags"><?php echo $this->__('Product Tags') ?></a></li>
+              <?php endif; ?>
+              <?php if($product_reviews = $this->getChildHtml('product_reviews')): ?>
+                <li><a href="#yt_tabitem_reviews"><?php echo $this->__('Product Reviews') ?></a></li>
+              <?php endif; ?>    
+              <?php if($review_form = $this->getChildHtml('review_form')): ?>
+                <li><a href="#yt_tabitem_reviewform"><?php echo $this->__('Write Your Own Review') ?></a></li>
+              <?php endif; ?>
+            </ul>
+            <div class="yt-tab-content">
+				<?php if ( $_description ):?>
+				<div id="yt_tab_decription">
+					<div class="collateral-box">
+						<?php echo $_description ?>
+					</div>
+				</div>
+				<?php endif;?>
+					
+				<?php if ( $_additional ) : ?>
+				<div id="yt_tab_additional">
+					<div class="collateral-box">
+						<?php echo $_additional ?>
+					</div>
+				</div>
+				<?php endif;?>
+					
+				<?php if( $upsell_products ): ?>
+				<div id="yt_tabitem_upsell">
+					<?php echo $upsell_products; ?>
+				</div>
+				<?php endif;?>
+				
+				<?php if( $product_additional_data ): ?>
+				<div id="yt_abitem_tags">
+					<?php echo $product_additional_data; ?>
+				</div>
+				<?php endif;?>
+				
+				<?php if($product_reviews): ?>
+				<div id="yt_tabitem_reviews">
+					<?php echo $product_reviews ?>
+				</div>
+				<?php endif;?>
+				
+				<?php if($review_form): ?>
+				<div id="yt_tabitem_reviewform">
+					<?php echo $review_form; ?>
+				</div>
+				<?php endif;?>
+            </div> 
+        </div>
+		
+		
+    </div>
+</div>

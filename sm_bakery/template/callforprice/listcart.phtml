@@ -1,0 +1,59 @@
+<?php
+/**
+ * @author		Sashas
+ * @category    Sashas
+ * @package     Sashas_Callforprice
+ * @copyright   Copyright (c) 2013 Sashas IT Support Inc. (http://www.sashas.org)
+ * @license     http://opensource.org/licenses/GPL-3.0  GNU General Public License, version 3 (GPL-3.0)
+
+ */
+
+$_product=$this->getProduct();
+$add_to_cart_url=$this->getAddUrl();
+$customer_group=$this->getGroupId();
+$sidebar=$this->getSidebar();
+$compare=$this->getCompare();
+$wishlist=$this->getWishlist();
+$ajax_simple=$this->getAjaxsimple();
+$ajax_conf=$this->getAjaxconf();
+$ajax_simple_enable=$this->getAjaxsimpleEnable();
+$ajax_conf_enable=$this->getAjaxconfEnable();
+$customAjax=$this->getCustomAjax();
+$enable_ajax=0;
+if (function_exists('themeOptions'))
+	$enable_ajax = themeOptions('enable_ajax');
+
+$model=Mage::getModel('callforprice/callforprice')->loadByProductId($_product->getId());
+ 
+$show_cart=0;
+
+if ($model->getId() && $model->getAddtocartEnabled()==1) {
+	$show_cart=1;
+}
+if (!$model->getId() || !$model->getStatus() ) {
+	$show_cart=1;
+}
+if (in_array($customer_group, explode(',',$model->getCustomerGroups()))) {
+	$show_cart=1;
+}
+if ($show_cart && $wishlist) { 
+?>
+	<button type="button" title="<?php echo $this->__('Add to Cart') ?>" onclick="addWItemToCart(<?php echo $add_to_cart_url ?>)" class="button btn-cart"><span><span><?php echo $this->__('Add to Cart') ?></span></span></button>
+<?php } elseif ($show_cart && $sidebar) {   ?>
+ 	<a href="<?php echo $add_to_cart_url ?>" class="link-cart"><?php echo $this->__('Add to Cart') ?></a>
+<?php } elseif ($show_cart && $ajax_simple) {   ?>	
+ 	<button type="button" title="<?php echo $this->__('Add to Cart') ?>" class="button btn-cart" onclick="setLocationAjax('<?php echo $add_to_cart_url; ?>','<?php echo $_product->getId()?>')"><span><span><?php echo $this->__('Add to Cart') ?></span></span></button>
+<?php } elseif ($show_cart && $ajax_conf) {   ?> 	 	
+ 	<button type="button" title="<?php echo $this->__('Add to Cart') ?>" class="button" onclick="showOptions('<?php echo $_product->getId()?>')"><span><span><?php echo $this->__('Add to Cart') ?></span></span></button> 	 	
+<?php } elseif ($show_cart && $ajax_simple_enable) {   ?>	
+	<a class="buttons-cart" onclick="<?php if($enable_ajax): ?>setLocationAjax<?php else: ?>setLocation<?php endif;?>('<?php echo $add_to_cart_url; ?>','<?php echo $_product->getId()?>')"><?php echo $this->__('Add to Cart') ?></a>
+<?php } elseif ($show_cart && $ajax_conf_enable) {   ?> 	 	
+	<a class="buttons-cart" onclick="<?php if($enable_ajax): ?>showOptions('<?php echo $_product->getId()?>')<?php else: ?>setLocation('<?php echo $add_to_cart_url; ?>','<?php echo $_product->getId()?>')<?php endif;?>"><?php echo $this->__('Add to Cart') ?></a>
+<?php } elseif ($show_cart && $compare) {   ?> 	
+	<p><button type="button" title="<?php echo $this->__('Add to Cart') ?>" class="button btn-cart" onclick="setPLocation('<?php $add_to_cart_url; ?>', true)"><span><span><?php echo $this->__('Add to Cart') ?></span></span></button></p>
+	
+<?php } elseif ($show_cart && $customAjax) {   ?> 	
+	<a title="<?php echo $this->__('Add to Cart') ?>" href="javascript:void(0);<?php //echo $this->getAddToCartUrl($_product) //allow add product to cart and then redirect to cart page ?>" class="btn-cart bgcolor fontcolor" onclick="setLocation('<?php echo $add_to_cart_url; ?>')"><span><span <?php /* class="icon-plus" */ ?>><?php echo $this->__('Add to Cart') ?></span></span></a>
+<?php }elseif ($show_cart) { ?>
+	<button type="button" title="<?php echo $this->__('Add to Cart') ?>" class="button btn-cart" onclick="setLocation('<?php echo $add_to_cart_url; ?>')"><span><span><?php echo $this->__('Add to Cart') ?></span></span></button>	
+<?php } ?>
