@@ -1,0 +1,59 @@
+<?php
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE_AFL.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade Magento to newer
+ * versions in the future. If you wish to customize Magento for your
+ * needs please refer to http://www.magentocommerce.com for more information.
+ *
+ * @category    design
+ * @package     base_default
+ * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */
+?>
+<?php if (($_products = $this->getProductCollection()) && $_products->getSize()): ?>
+<div class="page-title category-title">
+    <h1 class="subtitle"><?php echo $this->__('New Products') ?></h1>
+</div>
+<?php $_columnCount = $this->getColumnCount(); ?>
+    <?php $i=0; foreach ($_products->getItems() as $_product): ?>
+        <?php if ($i++%$_columnCount==0): ?>
+        <ul class="products-grid row">
+        <?php endif ?>
+            <li class="item span3<?php if(($i-1)%$_columnCount==0): ?> first<?php elseif($i%$_columnCount==0): ?> last<?php endif; ?>">
+                <a href="<?php echo $_product->getProductUrl() ?>" title="<?php echo $this->htmlEscape($_product->getName()) ?>" class="product-image"><img src="<?php echo $this->helper('catalog/image')->init($_product, 'small_image')->resize(200) ?>"  alt="<?php echo $this->htmlEscape($_product->getName()) ?>" /></a>
+                <a href="<?php echo $_product->getProductUrl() ?>" title="<?php echo $this->stripTags($this->getImageLabel($_product, 'small_image'), null, true) ?>" class="product-image image-phone"><img src="<?php echo $this->helper('catalog/image')->init($_product, 'small_image')->resize(320); ?>" alt="<?php echo $this->stripTags($this->getImageLabel($_product, 'small_image'), null, true) ?>" /></a>
+                <div class="product-shop">
+                    <h3 class="product-name"><a href="<?php echo $_product->getProductUrl() ?>" title="<?php echo $this->htmlEscape($_product->getName()) ?>"><?php echo $this->htmlEscape($_product->getName()) ?></a></h3>
+                    <p class="desc_grid"><?php $small_getDescription = strip_tags($_product->getShortDescription());
+         if (strlen($small_getDescription) < 64) echo($small_getDescription);
+         else { echo substr($small_getDescription, 0, 64).'...';} ?></p> 
+                    <?php // echo $this->getReviewsSummaryHtml($_product, 'short') ?>
+                <?php /* echo $this->getPriceHtml($_product, true, '-new') */ ?>
+                <?php  /* Sashas_Callfor_Price */                        
+                		echo $this->getLayout()->createBlock('callforprice/listprice')->setProduct($_product)->setPrefix('-new')->toHtml();
+                 	   /* Sashas_Callfor_Price */
+               	?>
+                    <div class="actions">
+                      <button type="button" title="<?php echo $this->__('Details') ?>" class="button btn-details" onclick="setLocation('<?php echo $_product->getProductUrl() ?>')"><span><span><?php echo $this->__('Details') ?></span></span></button>
+                    </div>
+                </div>
+            </li>
+        <?php if ($i%$_columnCount==0 || $i==count($_products)): ?>
+        </ul>
+        <?php endif ?>
+    <?php endforeach; ?>
+<?php endif; ?>
