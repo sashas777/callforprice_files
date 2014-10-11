@@ -1,0 +1,57 @@
+<?php 
+/**
+ * @author		Sashas
+ * @category    Sashas
+ * @package     Sashas_Callforprice
+ * @copyright   Copyright (c) 2014 Sashas IT Support Inc. (http://www.sashas.org)
+ * @license     http://opensource.org/licenses/GPL-3.0  GNU General Public License, version 3 (GPL-3.0)
+ */
+?>
+<?php 
+   $_product = $this->getProduct();
+   $without_stock=$this->getWithoutStock(); 
+   $stock_only=$this->getStockOnly();
+?>
+<?php $productkind = $_product->getTypeId(); ?>
+<?php $theGoods = Mage::helper('customstockstatus')->getTheGoods($_product->getId()); ?>
+<?php $availabilitytext = Mage::helper('customstockstatus')->getAvailabilityText($theGoods, $productkind); ?>
+<?php $stockInfo = Mage::getModel('cataloginventory/stock_item')->loadByProduct($_product); ?>
+<?php $stocklevel = (int)$stockInfo->getQty(); ?>
+<?php $backordered = $stockInfo->getBackorders(); ?>
+<?php $stockmanaged = $stockInfo->getManageStock(); ?>
+<?php $restrictionsText = Mage::helper('customstockstatus')->getRestrictionsText(); ?>
+
+<?php if ($_product->isAvailable() && !$without_stock ): ?>
+    <?php if(($productkind == 'simple' || $productkind == 'virtual') && $stockmanaged == 1 && $backordered != 1): ?>
+		<?php if($stocklevel > 0): ?>
+    		<p class="availability"><?php echo $this->__('Availability:') ?> <?php echo $availabilitytext; ?></p>
+    		<?php if($restrictionsText) echo $restrictionsText; ?>
+    		<p class="shipsin"><?php echo Mage::helper('customstockstatus')->getShipDateHtml($theGoods, $productkind);?></p>
+ 		<?php else: ?>
+    		<p class="availability"><?php echo $this->__('Availability:') ?> <?php echo $availabilitytext; ?></p>
+    		<?php if($restrictionsText) echo $restrictionsText; ?>
+ 		<?php endif; ?>
+	<?php else: ?>
+    	<p class="availability"><?php echo $this->__('Availability:') ?> <?php echo $availabilitytext; ?></p>
+    	<?php if($restrictionsText) echo $restrictionsText; ?>
+    	<p class="shipsin"><?php echo Mage::helper('customstockstatus')->getShipDateHtml($theGoods, $productkind);?></p>
+  	<?php endif; ?>
+<?php else: ?>
+    <p class="availability"><?php echo $this->__('Availability:') ?> <?php echo $availabilitytext; ?></p><?php if($restrictionsText) echo $restrictionsText; ?>
+<?php endif; ?>
+
+ 
+<?php   echo $this->getChildHtml('product_type_data_extra') ?>
+
+<?php 
+if (!$stock_only):
+	$model=Mage::getModel('callforprice/callforprice')->loadByProductId($_product->getId());
+	$customer_group=$this->GetGroupId();
+	if ($model->getId() && $model->getStatus()==1 && !in_array($customer_group, explode(',',$model->getCustomerGroups())) ):
+?>
+<div class="price-box"><span id="product-price" class="regular-price"><span class="price"><div class="call-for-price"><?php echo $this->__($model->getValue());?></div></span></span></div>
+<?php   else:   
+		echo Mage_Catalog_Block_Product::getPriceHtml($_product);
+?>
+<?php endif;?>	 
+<?php endif;?>	 

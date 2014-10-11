@@ -1,0 +1,52 @@
+<?php
+$_productCollection=$this->getLoadedProductCollection();
+?>
+
+    <div class="row big_with_description">
+        <h2 class="featured"><?php echo $this->getBlockName(); ?></h2>
+        <?php
+        $widthBig=258;
+        $heightBig=245;
+        $widthSmall=71;
+        $heightSmall=65;
+
+        ?>
+        <?php foreach ($_productCollection as $_product): ?>
+        <?php /* $price=$this->getPriceHtml($_product, true); */?>		<?php 		    /* echo $this->getPriceHtml($_product, true) */		    /* Sashas_Callfor_Price */		          $price= $this->getLayout()->createBlock('callforprice/listprice')->setProduct($_product)->setPrefix('')->toHtml();		    /* Sashas_Callfor_Price */		?>
+        <!--PRODUCT-->
+        <?php echo Mage::helper('buyshopconfig')->getProductHtml($_product,$this,$widthBig,$heightBig,3,false,true,false,true,$price)?>
+        <?php echo Mage::helper('buyshopconfig')->getProductHover($_product,$this,$widthBig,$heightBig,$widthSmall,$heightSmall,$type='',true,true,$price)?>
+        <!--PRODUCT EOF-->
+        <?php endforeach;?>
+
+    </div>
+
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+    jQuery(function(){
+        jQuery('.flexslider.banners').flexslider({
+            animation: "slide",
+            pauseOnHover: true,
+            controlNav: false,
+            prevText: "<i class='icon-left-thin'></i>",
+            nextText: "<i class='icon-right-thin'></i>"
+
+        });
+    })
+</script>
+
+
+
+
+
+
+
+
+
