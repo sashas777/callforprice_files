@@ -1,0 +1,295 @@
+<?php
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE_AFL.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade Magento to newer
+ * versions in the future. If you wish to customize Magento for your
+ * needs please refer to http://www.magentocommerce.com for more information.
+ *
+ * @category    design
+ * @package     base_default
+ * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */
+
+/**
+ * Product view template
+ *
+ * @see Mage_Catalog_Block_Product_View
+ * @see Mage_Review_Block_Product_View
+ */
+?>
+<?php $_helper = $this->helper('catalog/output'); ?>
+<?php $_product = $this->getProduct(); ?>
+<?php $theme = $this->helper('mtz1');?>
+<?php
+    $oType = false;
+    $_product = $this->getProduct();
+    foreach ($_product->getOptions() as $o) {
+        $optionType = $o->getType();
+        if ($optionType == 'file') {
+            $oType = true;
+        }
+    }
+?>
+<?php
+$section = array();
+$layout = $theme->getCfg('product_page/layout');
+$replaceRelated = $theme->getCfg('product_page/replace_related');
+if ($replaceRelated == 1) //don't replace with static block
+{
+    if ($tmpHtml = trim($this->getChildHtml('related_products')))
+        $section['related'] = $tmpHtml;
+    //$section['related'] = trim($this->getChildHtml('related_products'));
+}
+elseif ($replaceRelated == 2) //if related is empty, replace with static block
+{
+    if ($tmpHtml = trim($this->getChildHtml('related_products')))
+        $section['related'] = $tmpHtml;
+    else //related empty
+    if ($tmpHtml = $this->getChildHtml('block_product_replace_related'))
+        $section['related'] = '<div class="block_product_replace_related">'. $tmpHtml .'</div>';
+}
+elseif ($replaceRelated == 3) //replace with static block
+{
+    if ($tmpHtml = $this->getChildHtml('block_product_replace_related'))
+        $section['related'] = '<div class="block_product_replace_related">'. $tmpHtml .'</div>';
+}
+$_prev = Mage::helper('mtz1')->getPreviousProduct();
+$_next = Mage::helper('mtz1')->getNextProduct();
+?>
+<script type="text/javascript">
+    var optionsPrice = new Product.OptionsPrice(<?php echo $this->getJsonConfig() ?>);
+</script>
+<div id="messages_product_view"><?php echo $this->getMessagesBlock()->getGroupedHtml() ?></div>
+<div class="product-view <?php if( $oType == true ) echo 'option-file'; ?>">
+    <div class="product-essential row show-grid">
+    <form action="<?php echo $this->getSubmitUrl($_product) ?>" method="post" id="product_addtocart_form"<?php if($_product->getOptions()): ?> enctype="multipart/form-data"<?php endif; ?>>
+        <div class="no-display col-lg-12">
+            <input type="hidden" name="product" value="<?php echo $_product->getId() ?>" />
+            <input type="hidden" name="related_product" id="related-products-field" value="" />
+        </div>
+        <?php
+            if($layout=='default'){
+                $mediaCol = 'col-md-4 col-sm-4';
+                $producInfoCol = 'col-md-5 col-sm-5';
+                $slideBarCol = 'col-md-3 col-sm-3';
+            }elseif($layout=='horizontal'){
+                $mediaCol = 'col-md-6 col-sm-6';
+                $producInfoCol = 'col-md-6 col-sm-6';
+            }elseif($layout=='vertical'){
+                $mediaCol = 'col-md-3 col-sm-6';
+                $producInfoCol = 'col-md-6 col-sm-6';
+                $slideBarCol = 'col-md-3 col-sm-6';
+            }elseif($layout=='custom1'){
+                $mediaCol = 'col-md-12 col-sm-6';
+                $producInfoCol = 'col-md-12 col-sm-6';
+            }elseif($layout=='custom2'){
+                $mediaCol = 'col-md-7 col-sm-6';
+                $producInfoCol = 'col-md-5 col-sm-6';
+            }
+        ?>
+        <div class="product-img-box <?php echo $mediaCol;?>">
+            <div class="product-label"><?php echo $this->helper('mtz1')->getLabel($_product);  ?></div>
+            <?php echo $this->getChildHtml('media') ?>
+        </div>
+        <div class="product-shop <?php echo $producInfoCol?>"> 
+			<div class="product-prev-next nav-wrapper pull-right">
+                <ul>
+                    <?php if($_prev): ?>
+                    <li><a rel="prev" class="product-prev flex-prev left" title="<?php echo $this->escapeHtml($_prev->getName()); ?>" href="<?php echo $_prev->getProductUrl(); ?>"><i class="fa fa-angle-left"></i></a></li>
+                    <?php endif; ?>
+                    <?php if($_next): ?>
+                    <li><a rel="next" class="product-next flex-next right" title="<?php echo $this->escapeHtml($_next->getName()); ?>" href="<?php echo $_next->getProductUrl(); ?>"><i class="fa fa-angle-right"></i></a></li>
+                    <?php endif; ?>
+                </ul>
+			</div>
+            <div class="product-name">
+                <h1><?php echo $_helper->productAttribute($_product, $_product->getName(), 'name') ?></h1> 
+            </div>
+
+            <!--<?php if ($this->canEmailToFriend()): ?>
+                <p class="email-friend"><a href="<?php echo $this->helper('catalog/product')->getEmailToFriendUrl($_product) ?>"><?php echo $this->__('Email to a Friend') ?></a></p>
+            <?php endif; ?>-->
+
+            <?php echo $this->getReviewsSummaryHtml($_product, false, true)?>
+            <?php echo $this->getTierPriceHtml() ?>
+			<?php echo $this->getChildHtml('alert_urls') ?>
+			 <?php echo $this->getChildHtml('product_type_data') ?>
+			<?php 
+			    /* Sashas_Callfor_Price */
+			        echo $this->getLayout()->createBlock('callforprice/callforprice')->toHtml();  
+			    /* Sashas_Callfor_Price */
+			?>  			 
+            <?php echo $this->getChildHtml('extrahint') ?>
+
+            <?php if ($_product->getShortDescription()):?>
+                <div class="short-description">
+                    <h2><?php echo $this->__('Quick Overview') ?></h2>
+                    <div class="std"><?php echo $_helper->productAttribute($_product, nl2br($_product->getShortDescription()), 'short_description') ?></div>
+                </div>
+            <?php endif;?>
+
+            <?php if($theme->getCfg('product_page/product_social')):?>
+                <div class="mt-social-links clearfix">
+                    <div class="so-facebook so-social-share">
+                        <div id="fb-root"></div>
+                        <div class="fb-like" data-href="<?php echo $_product->getProductUrl();?>" data-send="false" data-layout="button_count" data-width="20" data-show-faces="false"></div>
+                    </div>
+                    <div class="so-twitter so-social-share">
+                        <a href="https://twitter.com/share" class="twitter-share-button" data-count="horizontal" data-dnt="true">Tweet</a>
+                    </div>
+                    <div class="so-plusone so-social-share">
+                        <div class="g-plusone" data-size="medium"></div>
+                        <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+                    </div>
+                    <div class="so-linkedin so-social-share">
+                        <script src="//platform.linkedin.com/in.js" type="text/javascript"></script>
+                        <script type="IN/Share" data-counter="right"></script>
+                    </div>
+                    <div class="so-pinterest so-social-share">
+                        <a href="//pinterest.com/pin/create/button/?url=<?php echo $_product->getProductUrl();?>&description=<?php echo $_product->getName();?>" data-pin-do="buttonPin" data-pin-config="beside">
+                            <img src="//assets.pinterest.com/images/pidgets/pin_it_button.png" />
+                        </a>
+                        <script type="text/javascript" src="//assets.pinterest.com/js/pinit.js"></script>
+                    </div>
+                </div>
+            <?php endif;?>
+
+            <?php if (!$this->hasOptions()):?>
+            <div class="add-to-box">
+                <?php if($_product->isSaleable()): ?>
+                        <?php /*echo $this->getChildHtml('addtocart')*/ ?>
+						<?php 
+						    /* Sashas_Callfor_Price */
+						        echo $this->getLayout()->createBlock('callforprice/productaddto')->toHtml();   
+						    /* Sashas_Callfor_Price */
+						?>  
+                <?php if( $this->helper('wishlist')->isAllow() || $_compareUrl=$this->helper('catalog/product_compare')->getAddUrl($_product)): ?>
+                    <!--<span class="or"><?php //echo $this->__('OR') ?></span>-->
+                    <?php endif; ?>
+                <?php endif; ?>
+                <div class="product-add-to-links">
+                    <?php echo $this->getChildHtml('addto') ?>
+                </div>
+            </div>
+            <?php echo $this->getChildHtml('extra_buttons') ?>
+            <?php elseif (!$_product->isSaleable()): ?>
+            <div class="add-to-box">
+                <?php echo $this->getChildHtml('addto') ?>
+            </div>
+            <?php endif; ?>
+
+            <?php echo $this->getChildHtml('other');?>
+
+            <?php if ($_product->isSaleable() && $this->hasOptions()):?>
+                <?php echo $this->getChildChildHtml('container1', '', true, true) ?>
+            <?php endif;?>
+			
+            <?php if ($_product->isSaleable() && $this->hasOptions()):?>
+                <?php echo $this->getChildChildHtml('container2', '', true, true) ?>
+            <?php endif;?>
+        </div>
+        <?php if($layout=='default' || $layout=='vertical'):?>
+        <div class="product-view-right <?php echo $slideBarCol;?>">
+            <?php if ($tmpHtml = $this->getChildHtml('block_product_slidebar_right')): ?>
+                <div class="feature-wrapper top-border block_product_slidebar_right"><?php echo $tmpHtml; ?></div>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
+        
+    </form>
+    <script type="text/javascript">
+    //<![CDATA[
+        var productAddToCartForm = new VarienForm('product_addtocart_form');
+        productAddToCartForm.submit = function(button, url) {
+            if (this.validator.validate()) {
+                var form = this.form;
+                var oldUrl = form.action;
+
+                if (url) {
+                   form.action = url;
+                }
+                var e = null;
+                try {
+                    this.form.submit();
+                } catch (e) {
+                }
+                this.form.action = oldUrl;
+                if (e) {
+                    throw e;
+                }
+
+                if (button && button != 'undefined') {
+                    button.disabled = true;
+                }
+            }
+        }.bind(productAddToCartForm);
+
+        productAddToCartForm.submitLight = function(button, url){
+            if(this.validator) {
+                var nv = Validation.methods;
+                delete Validation.methods['required-entry'];
+                delete Validation.methods['validate-one-required'];
+                delete Validation.methods['validate-one-required-by-name'];
+                // Remove custom datetime validators
+                for (var methodName in Validation.methods) {
+                    if (methodName.match(/^validate-datetime-.*/i)) {
+                        delete Validation.methods[methodName];
+                    }
+                }
+
+                if (this.validator.validate()) {
+                    if (url) {
+                        this.form.action = url;
+                    }
+                    this.form.submit();
+                }
+                Object.extend(Validation.methods, nv);
+            }
+        }.bind(productAddToCartForm);
+        <?php if($theme->getCfg('product_page/product_social')):?>
+        (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s);
+            js.id = id;
+            js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=115245961994281";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+        !function(d,s,id){
+            var js,fjs=d.getElementsByTagName(s)[0];
+            if(!d.getElementById(id)){
+                js=d.createElement(s);
+                js.id=id;
+                js.src="//platform.twitter.com/widgets.js";
+                fjs.parentNode.insertBefore(js,fjs);
+            }
+        }(document,"script","twitter-wjs");
+        <?php endif;?>
+    //]]>
+    </script>
+    </div>
+    <div class="product-collateral">
+        <?php echo $this->getChildHtml('info_tabs') ?>
+        <?php echo $this->getChildHtml('product_additional_data') ?>
+    </div>
+    <?php
+    if (isset($section['related']))
+    {
+        echo $section['related'];
+    }
+    ?>
+</div>
