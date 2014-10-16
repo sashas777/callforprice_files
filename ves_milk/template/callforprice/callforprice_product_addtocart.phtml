@@ -1,0 +1,68 @@
+<?php 
+/**
+ * @author		Sashas
+ * @category    Sashas
+ * @package     Sashas_Callforprice
+ * @copyright   Copyright (c) 2013 Sashas IT Support Inc. (http://www.sashas.org)
+ * @license     http://opensource.org/licenses/GPL-3.0  GNU General Public License, version 3 (GPL-3.0)
+
+ */
+
+$_product=$this->getProduct();
+if (empty($_product))
+ 	$_product= Mage::registry('current_product');
+
+$customer_group=$this->GetGroupId();
+$show_cart=0;
+$model=Mage::getModel('callforprice/callforprice')->loadByProductId($_product->getId());
+ 
+if ($model->getId() && $model->getAddtocartEnabled()==1) {
+	$show_cart=1;	
+}
+if (!$model->getId() || !$model->getStatus()) {
+	$show_cart=1;
+}
+if (in_array($customer_group, explode(',',$model->getCustomerGroups()))) {
+	$show_cart=1;
+}
+
+$_wishlistSubmitUrl = $this->helper('wishlist')->getAddUrl($_product); 
+
+if ($show_cart){	 
+  $buttonTitle = $this->__('Add to Cart');  
+	  if($_product->isSaleable()): ?>
+   <div class="add-to-cart">
+    	<div class="qty quantity-adder">
+	        <?php if(!$_product->isGrouped()): ?>
+	<div class="quantity-number pull-left">
+	        <label for="qty"><?php echo $this->__('Quantity:') ?></label>
+	        <input type="text" name="qty" id="qty" maxlength="12" value="<?php echo $this->getProductDefaultQty() * 1 ?>" title="<?php echo $this->__('Qty') ?>" class="input-text qty" />
+</div>
+
+				<div class="quantity-wrapper pull-left">
+					<span class="add-up add-action fa fa-plus"></span> 
+					<span class="add-down add-action fa fa-minus"></span>
+				</div>
+				<div style="clear:both"></div>
+	        <?php endif; ?>
+        </div>
+        
+        <button type="button" title="<?php echo $buttonTitle ?>" class="button btn-cart" onclick="productAddToCartForm.submit(this)"><i class="fa fa-shopping-cart"></i><span><?php echo $buttonTitle ?></span></button>
+        <?php echo $this->getChildHtml('', true, true) ?>
+    <ul class="add-to-links">
+    <?php
+        $_compareUrl = $this->helper('catalog/product_compare')->getAddUrl($_product);
+    ?>
+    <?php if ($this->helper('wishlist')->isAllow()) : ?>
+        <li><a href="<?php echo $_wishlistSubmitUrl ?>" title="Toevoegen aan wenslijst" onclick="productAddToCartForm.submitLight(this, this.href); return false;" class="link-wishlist"><i class="fa fa-heart"></i></a></li>
+    <?php endif; ?>
+    <?php if($_compareUrl) : ?>
+        <li><span class="separator">|</span> <a href="<?php echo $_compareUrl ?>" title="Toevoegen aan vergelijken" class="link-compare"><i class="fa fa-refresh"></i></a></li>
+    <?php endif; ?>
+    </ul>
+    </div>
+	 <?php endif;  
+	   
+}
+
+ 

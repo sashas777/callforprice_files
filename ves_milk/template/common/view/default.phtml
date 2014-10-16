@@ -1,0 +1,224 @@
+<?php 
+
+$route = Mage::app()->getRequest()->getRouteName(); 
+
+$media_cols = array("md" => 6,
+                    "sm" => 6,
+                    "xs" => 12);
+
+$product_cols = array("md" => 6,
+                    "sm" => 6,
+                    "xs" => 12);
+/*If quickview popup are openning don't change column number of media block and product information block*/
+if($route == "tempcp") {
+    $media_cols = array("md" => 6,
+                    "sm" => 6,
+                    "xs" => 6);
+
+    $product_cols = array("md" => 6,
+                    "sm" => 6,
+                    "xs" => 6);
+}
+?>
+<script type="text/javascript">
+    var optionsPrice = new Product.OptionsPrice(<?php echo $this->getJsonConfig() ?>);
+</script>
+<div id="messages_product_view"><?php echo $this->getMessagesBlock()->getGroupedHtml() ?></div>
+<div class="product-view">
+    <div class="product-essential">
+    <form action="<?php echo $this->getSubmitUrl($_product) ?>" method="post" id="product_addtocart_form"<?php if($_product->getOptions()): ?> enctype="multipart/form-data"<?php endif; ?>>
+        <?php echo $this->getBlockHtml('formkey') ?>
+        <div class="no-display">
+            <input type="hidden" name="product" value="<?php echo $_product->getId() ?>" />
+            <input type="hidden" name="related_product" id="related-products-field" value="" />
+        </div>
+        <div class="row">
+                 <div class="col-lg-6 col-md-<?php echo $media_cols['md'];?> col-sm-<?php echo $media_cols['sm'];?> col-xs-<?php echo $media_cols['xs'];?> product-img-box">
+                    <div class="wap-img-box">
+                        <?php echo $this->getChildHtml('media') ?>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-<?php echo $product_cols['md'];?> col-sm-<?php echo $product_cols['sm'];?> col-xs-<?php echo $product_cols['xs'];?> product-shop">
+                    <div class="product-name">
+                        <h4><?php echo $_helper->productAttribute($_product, $_product->getName(), 'name') ?></h4>
+                    </div>
+                    <div class="product-detail">                   
+                    <?php echo $this->getTierPriceHtml() ?>
+                    <?php if ($this->canEmailToFriend()): ?>
+                        <p class="email-friend"><a href="<?php echo $this->helper('catalog/product')->getEmailToFriendUrl($_product) ?>"><?php echo $this->__('Email to a Friend') ?></a></p>
+                    <?php endif; ?> 
+                    <?php echo $this->getReviewsSummaryHtml($_product, false, true)?>
+                    
+                    <?php echo $this->getChildHtml('alert_urls') ?>
+                    <?php echo $this->getChildHtml('product_type_data') ?>
+					<?php 
+					    /* Sashas_Callfor_Price */
+					        echo $this->getLayout()->createBlock('callforprice/callforprice')->toHtml();  
+					    /* Sashas_Callfor_Price */
+					?>                       
+                    <?php echo $this->getChildHtml('extrahint') ?>
+
+                    <?php if (!$this->hasOptions()):?>
+                        <div class="add-to-box">
+                            <?php if (!$this->hasOptions()):?>
+                            <?php if($_product->isSaleable()): ?>
+                        <?php /*echo $this->getChildHtml('addtocart')*/ ?>
+						<?php 
+						    /* Sashas_Callfor_Price */
+						        echo $this->getLayout()->createBlock('callforprice/productaddto')->toHtml();   
+						    /* Sashas_Callfor_Price */
+						?>  
+                            <?php endif; ?>
+                            
+                            <?php elseif (!$_product->isSaleable()): ?>
+                            <?php echo $this->getChildHtml('extra_buttons') ?>
+                                <div class="add-to-box">
+                                    <?php echo $this->getChildHtml('addto') ?>
+                                </div>
+                            <?php endif; ?>
+                            
+                        </div>
+                        <?php echo $this->getChildHtml('extra_buttons') ?>
+                    <?php elseif ($_product->isSaleable() && $this->hasOptions()):?>
+                        <div class="add-to-box">
+                            <?php echo $this->getChildChildHtml('container2', '', true, true) ?>
+                        </div>
+                    <?php elseif (!$_product->isSaleable()): ?>
+                        <div class="add-to-box">
+                            <?php echo $this->getChildHtml('addto') ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ($_product->getShortDescription()):?>
+                        <div class="short-description">
+                            <h4><?php echo $this->__('Quick Overview') ?></h4>
+                            <div><?php echo $_helper->productAttribute($_product, nl2br($_product->getShortDescription()), 'short_description') ?>
+                            </div>
+                        </div>
+                    <?php endif;?>
+                    <?php  if($themeConfig->get("enable_social", 0)){  ?>
+                    <div class="share">
+                        <!-- AddThis Button END -->                 
+                        <div class="addthis_default_style"><a class="addthis_button_compact"><?php echo $this->__("Share: "); ?></a> <a class="addthis_button_email"></a><a class="addthis_button_print"></a> <a class="addthis_button_facebook"></a> <a class="addthis_button_twitter"></a></div>
+                        <script type="text/javascript" src="//s7.addthis.com/js/250/addthis_widget.js"></script> 
+                        <!-- AddThis Button BEGIN -->
+                        <div style="clear:both"></div>
+                    </div>
+                    <?php } ?>
+                    <?php echo $this->getChildHtml('other');?>
+
+                    </div>
+                </div>   
+        </div>
+        <div class="clearer"></div>
+        
+    </form>
+    <script type="text/javascript">
+    //<![CDATA[
+        var productAddToCartForm = new VarienForm('product_addtocart_form');
+        productAddToCartForm.submit = function(button, url) {
+            if (this.validator.validate()) {
+                var form = this.form;
+                var oldUrl = form.action;
+
+                if (url) {
+                   form.action = url;
+                }
+                var e = null;
+                try {
+                    this.form.submit();
+                } catch (e) {
+                }
+                this.form.action = oldUrl;
+                if (e) {
+                    throw e;
+                }
+
+                if (button && button != 'undefined') {
+                    button.disabled = true;
+                }
+            }
+        }.bind(productAddToCartForm);
+
+        productAddToCartForm.submitLight = function(button, url){
+            if(this.validator) {
+                var nv = Validation.methods;
+                delete Validation.methods['required-entry'];
+                delete Validation.methods['validate-one-required'];
+                delete Validation.methods['validate-one-required-by-name'];
+                // Remove custom datetime validators
+                for (var methodName in Validation.methods) {
+                    if (methodName.match(/^validate-datetime-.*/i)) {
+                        delete Validation.methods[methodName];
+                    }
+                }
+
+                if (this.validator.validate()) {
+                    if (url) {
+                        this.form.action = url;
+                    }
+                    this.form.submit();
+                }
+                Object.extend(Validation.methods, nv);
+            }
+        }.bind(productAddToCartForm);
+    //]]>
+    </script>
+    </div>
+    <?php echo $this->getChildHtml('info_tabs') ?>
+    <div class="tabs-group product-collateral">
+        <div id="tabs" class="htabs clearfix">
+    <?php
+     $tmp_html = "";
+    ?>
+<?php foreach ($this->getChildGroup('detailed_info', 'getChildHtml') as $alias => $html){
+        $tmp_html .= "<div id=\"tab-{$alias}\" class=\"tab-content box-{$alias}\">";
+        $tmp_html .= $html;
+        $tmp_html .= '<br class="clear clr"/>';
+        $tmp_html .= "</div>";
+        if ($title = $this->getChildData($alias, 'title'))	{
+            echo '<div class="tab-desc"><a class="description" href="#tab-'.$alias.'">'.$this->escapeHtml($title).'</a></div>';
+        }else{
+            echo '<div class="tab-desc"><a class="description" href="#tab-'.$alias.'">'. 'Beschrijving' .'</a></div>';
+        }
+     };?>
+<?php
+    $route = Mage::app()->getRequest()->getRouteName();
+?>
+    <?php if($route != "review" && $route !="tempcp") { ?>
+     <?php if($product_additional_data = $this->getChildHtml('product_additional_data')): ?>
+         <div class="tab-prod"><a class="product" href="#tab-tags"><?php echo Mage::helper('ves_tempcp')->__("Product Tags");?></a></div>
+           <?php $product_additional_data = '<div id="tab-tags" class="tab-content">'.$product_additional_data.'<br class="clear clr"/></div>'; ?>
+        <?php endif; ?>
+    <?php } ?>
+        <?php 
+            $product_customtab = "";
+            if($themeConfig->get("enable_product_customtab", 0)){ 
+                echo '<a href="#tab-custom">'.$themeConfig->get("product_customtab_name","").'</a>';
+                $product_customtab = "<div id=\"tab-custom\" class=\"tab-content box-custom\">";
+                $product_customtab .= $themeConfig->get("product_customtab_content","",true);
+                $product_customtab .= '<br class="clear clr"/>';
+                $product_customtab .= '</div>';
+            } ?>
+    <?php if($route != "review" && $route !="tempcp") { ?>
+        <div class="tab-review"><a class="reviews" href="#tab-reviews"><?php echo Mage::helper('ves_tempcp')->__("Reviews");?></a></div>
+        <?php } ?>
+        </div>
+        <?php echo $tmp_html; ?>
+        <?php echo $product_additional_data; ?>
+        <?php echo $product_customtab; ?>
+        <?php if($route != "review" && $route !="tempcp") { ?>
+        <div id="tab-reviews" class="tab-content">
+            <?php echo $this->getChildHtml("review_tab"); ?>
+        </div>
+        <?php } else { ?>
+
+        <?php echo $this->getChildHtml('product_additional_data'); ?>
+
+        <?php } ?>
+    </div>
+     <?php echo $this->getChildHtml('upsell_products') ?>
+</div>
+<script type="text/javascript">
+jQuery('#tabs a').tabs();
+</script> 

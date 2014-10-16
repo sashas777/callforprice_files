@@ -1,0 +1,125 @@
+<div class="col-lg-<?php echo $span;?> col-sm-<?php echo $span;?> col-xs-12 item-prod">
+								<div class="product-block">
+									<?php
+				                            $swap_class = "";
+				                            if($swap_image && $hover_image = Mage::helper("ves_tempcp/framework")->getProductImage($_product->getId(), $swap_image_number, $this->getConfig("thumbWidth"), $this->getConfig("thumbHeight"))) {
+				                                    $swap_class = "swap";
+				                             } 
+				                    ?>
+									<div class="image <?php echo $swap_class; ?> product-image image-thumb">
+										<a href="<?php echo $_product->getProductUrl() ?>" title="<?php echo $this->htmlEscape($_product->getName()) ?>">
+											<?php 
+											if($this->getConfig("enable_sale_icon")) {
+				                                // Get the Special Price
+				                                $specialprice = Mage::getModel('catalog/product')->load($_product->getId())->getSpecialPrice(); 
+				                                // Get the Special Price FROM date
+				                                $specialPriceFromDate = Mage::getModel('catalog/product')->load($_product->getId())->getSpecialFromDate();
+				                                // Get the Special Price TO date
+				                                $specialPriceToDate = Mage::getModel('catalog/product')->load($_product->getId())->getSpecialToDate();
+				                                // Get Current date
+				                                $today =  time();
+				                             
+				                                if ($specialprice) {
+				                                    if($today >= strtotime( $specialPriceFromDate) && $today <= strtotime($specialPriceToDate) || $today >= strtotime( $specialPriceFromDate) && is_null($specialPriceToDate)) {
+			                            ?>
+			                                    <span class="onsale"><span><?php echo $this->__("Sale");?></span></span>
+			                            <?php  
+			                                   	 }
+			                                	}
+			                           		}
+			                            ?>
+			                            	<?php
+			                            	if($this->getConfig("enable_new_icon")) {
+				                                $is_new = Mage::helper("ves_tempcp")->checkProductIsNew( $_product );
+				                                
+				                                if($is_new) { ?>
+				                                <span class="new-icon"><span><?php echo $this->__("New");?></span></span>
+				                                <?php
+
+				                                }
+				                            }
+				                            ?>
+											<img src="<?php echo $this->helper('catalog/image')->init($_product, 'small_image')->resize( $this->getConfig("thumbWidth"), $this->getConfig("thumbHeight") ) ?>" alt="<?php echo $this->htmlEscape($_product->getName()) ?>" />
+										</a>
+										<?php if($swap_class) { ?>
+			                                <span class="hover-image">
+			                                    <a class="img" href="<?php echo $_product->getProductUrl(); ?>"><img src="<?php echo $hover_image; ?>" width="<?php echo $list_image_width; ?>" height="<?php echo $list_image_height; ?>" alt="<?php echo $this->htmlEscape($_product->getName()) ?>"></a>
+			                                </span>
+			                            <?php } ?>
+
+										<?php if( $this->getConfig("show_pzoom") ) { ?>
+										<?php
+				                            $productId = $_product->getId();
+				                            $_product = Mage::getModel('catalog/product')->load($productId);
+				                        ?>
+				                        <a href="<?php echo $this->helper('catalog/image')->init($_product, 'image')->resize(800);?>" class="colorbox product-zoom cboxElement" title="<?php echo $this->htmlEscape($_product->getName()) ?>"><i class="icon-zoom-in"></i></a>
+											<?php } ?>
+									</div>
+									<div class="product-info">
+												<?php if( $this->getConfig('show_title') ) : ?>
+												<h2 class="product-name">
+													<a href="<?php echo $_product->getProductUrl() ?>" title="<?php echo $this->htmlEscape($_product->getName()) ?>"><?php
+
+														$product_name = $this->htmlEscape($_product->getName());
+														echo $this->subString($product_name, $title_maxchar, "");
+
+													 	?></a>
+												</h2>
+												<?php endif; ?>
+												<?php if ( $this->getConfig('show_desc') ): ?>
+												<div class="desc">
+													<?php
+														$product_short_desc = $_helper->productAttribute($_product, nl2br($_product->getShortDescription()), 'short_description');
+														echo $this->subString($product_short_desc, $desc_maxchar, "");
+													 ?>
+												</div>
+												<?php endif; ?>
+												<?php if ( $this->getConfig('show_review') ): ?>
+													<div class="review"><?php echo $this->getReviewsSummaryHtml($_product, 'short') ?></div>
+												<?php endif; ?>
+												<?php if($this->getConfig('show_price')): ?>
+						<?php 
+								    /* echo $this->getPriceHtml($_product, true) */
+								    /* Sashas_Callfor_Price */
+						if(!Mage::registry('current_product'))
+								          echo $this->getLayout()->createBlock('callforprice/listprice')->setProduct($_product)->setPrefix('')->toHtml();
+								    /* Sashas_Callfor_Price */
+						else 
+							echo $this->getPriceHtml($_product, true);
+								?>	
+												<?php endif; ?>
+											
+												<div class="productcarousel-action">
+													<?php if( $this->getConfig("show_addcart") ): ?>		                	
+														<?php if($_product->isSaleable()): ?>
+					<?php 
+					    /* Sashas_Callfor_Price */
+					if(!Mage::registry('current_product')):
+					        echo $this->getLayout()->createBlock('callforprice/listcart')->setProduct($_product)->setAddUrl($this->getAddToCartUrl($_product))->toHtml();
+					else:
+					    /* Sashas_Callfor_Price */
+					?>  		 													
+							 <button type="button" title="<?php echo $this->__('Add to Cart') ?>" class="button btn-cart" onclick="setLocation('<?php echo $this->getAddToCartUrl($_product) ?>')"><span><span><?php echo $this->__('Add to Cart') ?></span></span></button> 
+							 <?php endif; ?>
+														<?php else: ?>
+														<p class="availability out-of-stock"><span><?php echo $this->__('Out of stock') ?></span></p>
+														<?php endif; ?>
+													<?php endif; ?>
+													<?php if( $this->getConfig("show_wc") ): ?>
+															<div class="add-to-links">
+																<div class="left">										
+																	<a class="add-to-wishlist" href="<?php echo $this->helper('wishlist')->getAddUrl($_product);?>" title="<?php echo $this->__('Wishlist')?>"><?php echo $this->__('Wishlist')?></a>										
+																</div>
+																<div class="right">
+																	<a class="add-to-compare" href="<?php echo $this->helper('catalog/product_compare')->getAddUrl($_product);?>" title="<?php echo $this->__('Compare')?>"><?php echo $this->__('Compare')?></a>
+																</div>
+															</div>
+															<?php endif; ?>
+													<div style="clear:both"></div>
+												</div>
+												<?php if ($quickview) { ?>
+						                        <a class="ves-carousel-colorbox<?php echo $moduleId;?> ves-quickview" href="<?php echo Mage::helper("ves_tempcp")->getQuickviewURL( $_product->getProductUrl() ); ?>"><span class='fa fa-plus'></span><?php echo $this->__('Quick View'); ?></a>
+						                    <?php } ?>
+										</div>
+   							    </div>
+							</div>
