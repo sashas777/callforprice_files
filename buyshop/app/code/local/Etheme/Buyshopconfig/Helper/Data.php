@@ -635,6 +635,9 @@ class Etheme_Buyshopconfig_Helper_Data extends Mage_Core_Helper_Abstract
         $output = '';
  
         /* Sashas_Callfor_Price */    
+        $callforprice="";
+        
+        if (!$el instanceof Sashas_Callforprice_Block_Upsell)
         $callforprice=Mage::app()->getLayout()->createBlock('callforprice/listcart')->setProduct($_product)->toHtml();                
         if (!trim($callforprice))
         	return  $output;                       	 
