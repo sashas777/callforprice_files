@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS  sashas_callforprice_product (
 		`addtocart_enabled` smallint(6) NOT NULL default '0',		 
 		`update_time` TIMESTAMP  DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 		`customer_groups` varchar(255) NOT NULL default '-1',
+		`store_id` INT(11) NOT NULL DEFAULT '0',
 		PRIMARY KEY (`value_id`)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ";
